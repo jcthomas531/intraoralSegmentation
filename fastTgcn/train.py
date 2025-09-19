@@ -14,15 +14,15 @@ import logging
 from sklearn.model_selection import StratifiedKFold
 from utils import test_semseg
 from loss import IoULoss, DiceLoss
-from TSGCNet import TSGCNet
-from TestModel import TestModel
-from PointNet import PointNetDenseCls
-from PointNetplus import PointNet2
-from MeshSegNet import MeshSegNet
+#from TSGCNet import TSGCNet
+#from TestModel import TestModel
+#from PointNet import PointNetDenseCls
+#from PointNetplus import PointNet2
+#from MeshSegNet import MeshSegNet
 from Baseline import Baseline
-from ablation import ablation
-from OurMethod import SGNet
-from pct import PointTransformerSeg
+#from ablation import ablation
+#from OurMethod import SGNet
+#from pct import PointTransformerSeg
 import random
 
 if __name__ == "__main__":
