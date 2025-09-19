@@ -188,7 +188,7 @@ def generate_plyfile(index_face, point_face, label_face, path= " "):
 
 class plydataset(Dataset):
 
-    def __init__(self, path="iosSegData/3d-IOSSeg/train", mode='train', model='normal'):
+    def __init__(self, path="data/train", mode='train', model='normal'):
         self.mode = mode
         self.model = model
         self.root_path = path
@@ -351,27 +351,14 @@ class plydataset(Dataset):
 
 
 
-#this part here seems to be the only part that needs to be updated out of the box
-#just changing file path to my path
-#in their code they have the file path as 'data/test/001.ply' but in the data that 
-#was supplied, this file does not exist, instead using '001_L.ply'
-
 
 if __name__ == "__main__":
     # print(" ")
-    index_face, points_face, label_face, label_face_onehot, points, _ = get_data('iosSegData/3d-IOSSeg/test/001.ply')
+    index_face, points_face, label_face, label_face_onehot, points, _ = get_data('data/test/001.ply')
     print(index_face)
     # print(index_face.shape, points_face.shape, label_face.shape, label_face_onehot.shape, points.shape)
 
 
-
-
-#notes
-#all of the code above works, but what does it do?
-#i am assuming that all but the last section of code are supporting functions
-#however, what do we produce when we run that last section of code?
-#in the last section of code, does the file path need to be changed for each file
-#path? do the files need to be read in one at a time?
 
 
 
