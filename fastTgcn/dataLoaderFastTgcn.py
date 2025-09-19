@@ -188,7 +188,7 @@ def generate_plyfile(index_face, point_face, label_face, path= " "):
 
 class plydataset(Dataset):
 
-    def __init__(self, path="data/train", mode='train', model='normal'):
+    def __init__(self, path="iosSegData/3d-IOSSeg/train", mode='train', model='normal'):
         self.mode = mode
         self.model = model
         self.root_path = path
@@ -359,7 +359,7 @@ class plydataset(Dataset):
 
 if __name__ == "__main__":
     # print(" ")
-    index_face, points_face, label_face, label_face_onehot, points, _ = get_data('H:/schoolfiles/dissertation/intraoralSegmentation/fastTgcn/iosSegData/3d-IOSSeg/test/001_L.ply')
+    index_face, points_face, label_face, label_face_onehot, points, _ = get_data('iosSegData/3d-IOSSeg/test/001.ply')
     print(index_face)
     # print(index_face.shape, points_face.shape, label_face.shape, label_face_onehot.shape, points.shape)
 
