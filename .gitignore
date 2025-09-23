@@ -1,0 +1,4 @@
+#ignoring specific folders
+fastTcgn/__pycache__
+fastTcgn/experiment
+fastTcgn/pred_global
