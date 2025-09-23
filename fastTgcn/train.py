@@ -25,8 +25,30 @@ from Baseline import Baseline
 #from pct import PointTransformerSeg
 import random
 
+###############################################################################
+#attempt at diagnostics
+#import sys
+#print("Torch version:", torch.__version__)
+#print("CUDA version:", torch.version.cuda)
+#print("CUDA available?", torch.cuda.is_available())
+#if torch.cuda.is_available():
+#    print("Device count:", torch.cuda.device_count())
+#    for i in range(torch.cuda.device_count()):
+#        print(f"  {i}: {torch.cuda.get_device_name(i)}")
+#print("Python executable:", sys.executable)
+#print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
+#print("PATH:", os.environ["PATH"])
+###############################################################################
+
+
+
+
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+    #below seems to be the problematic line, it is telling the system to use the 
+    #cuda device indexed as 2. My machine only has the one GPU so it should be using
+    #using index 0. I am commenting this out so that it uses the default device
+    #another option is to manually set this 2 to 0
+    #os.environ["CUDA_VISIBLE_DEVICES"] = '2'
     """-------------------------- parameters --------------------------------------"""
     batch_size = 1
     k = 32
@@ -65,10 +87,17 @@ if __name__ == "__main__":
     # test_dataset_4 = plydataset("data/test-U", 'test', 'meshsegnet')
     # test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=8)
 
-    train_dataset_4 = plydataset("data/train-L", 'train', 'meshsegnet')
-    train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=8, worker_init_fn=worker_init_fn)
-    test_dataset_4 = plydataset("data/test-L", 'test', 'meshsegnet')
-    test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=8)
+
+
+
+
+#according to their instructions i have named the directories train and test
+#they seem to have it coded as train-L and test-L
+#i am going to edit it and see if this gets rid of the file path complaint
+    train_dataset_4 = plydataset("data/train", 'train', 'meshsegnet')
+    train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=0, worker_init_fn=worker_init_fn)
+    test_dataset_4 = plydataset("data/test", 'test', 'meshsegnet')
+    test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=0)
 
     """--------------------------- Build Network and optimizer----------------------"""
     model = Baseline(in_channels=12, output_channels=17)

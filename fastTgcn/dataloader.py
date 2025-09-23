@@ -7,7 +7,13 @@ import random
 import pandas as pd
 from scipy.spatial import distance_matrix
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+
+
+#below seems to be the problematic line, it is telling the system to use the 
+#cuda device indexed as 2. My machine only has the one GPU so it should be using
+#using index 0. I am commenting this out so that it uses the default device
+#another option is to manually set this 1 to 0
+#os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 
 # labels = ((255, 255, 255), (255, 0, 0), (255, 125, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255),
