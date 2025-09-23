@@ -88,16 +88,31 @@ if __name__ == "__main__":
     # test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=8)
 
 
-
-
-
+#set up for both lower and upper data
 #according to their instructions i have named the directories train and test
 #they seem to have it coded as train-L and test-L
 #i am going to edit it and see if this gets rid of the file path complaint
-    train_dataset_4 = plydataset("data/train", 'train', 'meshsegnet')
+    # train_dataset_4 = plydataset("data/train", 'train', 'meshsegnet')
+    # train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=0, worker_init_fn=worker_init_fn)
+    # test_dataset_4 = plydataset("data/test", 'test', 'meshsegnet')
+    # test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=0)
+
+#setup for just lower data
+    train_dataset_4 = plydataset("data/train-L", 'train', 'meshsegnet')
     train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=0, worker_init_fn=worker_init_fn)
-    test_dataset_4 = plydataset("data/test", 'test', 'meshsegnet')
+    test_dataset_4 = plydataset("data/test-L", 'test', 'meshsegnet')
     test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=0)
+
+
+
+#set up for just upper data
+    # train_dataset_4 = plydataset("data/train-U", 'train', 'meshsegnet')
+    # train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=0, worker_init_fn=worker_init_fn)
+    # test_dataset_4 = plydataset("data/test-U", 'test', 'meshsegnet')
+    # test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=0)
+
+
+
 
     """--------------------------- Build Network and optimizer----------------------"""
     model = Baseline(in_channels=12, output_channels=17)
