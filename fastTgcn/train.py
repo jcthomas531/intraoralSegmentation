@@ -137,7 +137,11 @@ if __name__ == "__main__":
     iou_loss = IoULoss()
     dice_loss = DiceLoss()
     # iou_label = torch.ones((1, 17)).float().cuda()
-    for epoch in range(0, 301):
+    #
+    # 301 epochs is taking a long time on my machine, changing to 31 epochs for
+    # the time being
+    #
+    for epoch in range(0, 31):
         train_loader = train_loader_4
         test_loader = test_loader_4
         scheduler.step()
