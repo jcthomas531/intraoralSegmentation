@@ -74,7 +74,7 @@ dat["face"].data
 faceDat = pd.DataFrame(dat["face"].data)
 faceDat.head()
 #this is really interesting as it keeps the 3 entries descibing which vertices 
-#make up the triangle as a single vector
+#make up the triangle as a single vector (called a list)
 #another interesting thing is that dat["face"].data doees not include the value
 #3 at the very start saying that three points are involved in the facec
 #perhaps that is treated implicitly as the vector of the vertices is of length 3
@@ -82,6 +82,52 @@ faceDat.head()
 #if i ever needed it, i could just extract the length of that vector
 #now that things are in a numpy data frame, i can work with them in a very detailed
 #way
-#first thing I want to do (just for fun) is to make that vector of vertex indices
-#into 3 different columsn
+
+
+
+#first thing I want to do (just for fun) is to make that list of vertex indices
+#into 3 different columns
+#the pd.Series i am not sure I understand. it is taking a column of lists and
+#turning it into a data frame. The apply function works similar to the apply function
+#in R. It is defined for data frames and allows you to choose an axis like R but
+#here we are using  the version of it defined for series, so axis has no bearing.
+#the join function defaults to joining on index, which is really handy. You can 
+#also rename specific columns in place without reassignement which is handy. You 
+#could also just reassign but this is nice
+vertDf = faceDat["vertex_indices"].apply(pd.Series)
+faceDat2 = faceDat.join(vertDf)
+faceDat2.rename(columns = {0:"vertex1", 1: "vertex2", 2: "vertex3"}, inplace=True)
+faceDat2
+#could also use this approach where we take the column, make it into a list, and
+#then make that list into a data frame. This is a more direct data frame creation
+#approach
+a = pd.DataFrame(faceDat["vertex_indices"].tolist(), 
+                        columns=["vertex1", "vertex2", "vertex3"])
+aa = faceDat.join(a)
+aa
+
+
+#now that we have that, lets see how many unique colors there are in the dataset
+#and find out what they are
+#concatenation is done with the + sign for strings
+#i am using the str.zfill() function to pad with leading zeros to make all the 
+#values into 3 digit numbers. if you want to spread this over multiple lines, it 
+#must be included in a parenthesis
+faceDat2["color"] = (faceDat2["red"].astype(str).str.zfill(3) + "-" +
+                     faceDat2["green"].astype(str).str.zfill(3) + "-" +
+                     faceDat2["blue"].astype(str).str.zfill(3))
+#produce an array of the unique colors
+uniqueColors = faceDat2["color"].unique()
+#count of the number of faces with each color
+colorCounts = faceDat2["color"].value_counts()
+
+
+#now lets make sure that the colorings are consistent across the training objects
+#by bringing in another training set
+#we will also need to determine which color represents which tooth
+
+
+
+
+
 
