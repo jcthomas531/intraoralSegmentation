@@ -125,9 +125,129 @@ colorCounts = faceDat2["color"].value_counts()
 #now lets make sure that the colorings are consistent across the training objects
 #by bringing in another training set
 #we will also need to determine which color represents which tooth
+#it would be nice to be able to go back and forth between the plotting and manipulation
+#tasks without having separate read ins, i am sure there is a way. Best would be
+#going from the raw data to the plotting, but this is fine for now
+
+mesh64 = pv.read("064_L.ply")
+mesh64.plot()
+#from a visual inspection, the colors seem to be indicating the same teeth
+#the color choice tho... lol they leave a bit to be desired. there are many
+#colors to choose from and they just basically chose various shades of yellow lol
+
+#lets see how the upper teeth look
+os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-U\\")
+mesh07U = pv.read("007_U.ply")
+mesh07U.plot()
+#lets check if they are using the same colors
+datU = PlyData.read("007_U.ply")
+faceDatU = pd.DataFrame(datU["face"].data)
+faceDatU["color"] = (faceDatU["red"].astype(str).str.zfill(3) + "-" +
+                     faceDatU["green"].astype(str).str.zfill(3) + "-" +
+                     faceDatU["blue"].astype(str).str.zfill(3))
+uniqueColorsU = faceDatU["color"].unique()
+colorCountsU = faceDatU["color"].value_counts()
+
+
+
+
+#sort and compare the colors
+#two options for sorting, one with the array, the other making it a pandas series
+import numpy as np
+uniqueColorsU = np.sort(uniqueColorsU)
+uniqueColors = np.sort(uniqueColors)
+#
+b = pd.Series(uniqueColorsU).sort_values()
+#lets put the two next to each other for easy comparison
+colorComp = pd.DataFrame({"upper": uniqueColorsU, "lower": uniqueColors})
+#the only common color between the two is 255-255-255 which i believe is the gums
 
 
 
 
 
 
+#ok this is how we can see the actual colors, it defaults to using the RGBA-normed
+#unless it is specified in this way
+#you can make this the defualt if you run below but you still have to have rgb=True
+#mesh.cell_data.set_active("RGBA")
+mesh64.plot(scalars="RGBA", rgb=True)
+mesh61_3.plot(scalars="RGBA", rgb=True)
+mesh07U.plot(scalars="RGBA", rgb=True)
+#mesh64 has a third molar, before we move on to labeling, we should make sure that
+#we are looking at the mouth that has the maximal number of labels, good excercise
+#to write a function and look at the count of unique colors for each ply top and
+#bottom and identify which has the most
+
+
+
+
+#create a function that takes a filename returns the number of unique colors
+
+def colorCounter(file):
+    dat = PlyData.read(file)
+    faceDat = pd.DataFrame(dat["face"].data)
+    faceDat["color"] = (faceDat["red"].astype(str).str.zfill(3) + "-" +
+                         faceDat["green"].astype(str).str.zfill(3) + "-" +
+                         faceDat["blue"].astype(str).str.zfill(3))
+    uniqCols = len(faceDat["color"].unique())
+    return uniqCols
+
+
+
+colorCounter("007_U.ply")
+    
+
+#cycle thru upper and lower data and determine which ply file has the most colors
+
+
+#define function
+def maxColors(fileList):
+    numFiles = len(fileList)
+    holderFrame = pd.DataFrame({
+        "file": [pd.NA]*numFiles,
+        "count": [pd.NA]*numFiles
+        })
+    for i in range(numFiles):
+        holderFrame.loc[i,"file"] = fileList[i]
+        holderFrame.loc[i,"count"] = colorCounter(fileList[i])
+    return holderFrame
+#get file paths  
+dataPath = "H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\"
+trainLFiles = os.listdir(dataPath+"train-Lall\\")
+testLFiles = os.listdir(dataPath+"test-Lall\\")
+trainUFiles = os.listdir(dataPath+"train-U\\")
+testUFiles = os.listdir(dataPath+"test-U\\")
+#run function of each upper and lower test and train
+os.chdir(dataPath+"train-Lall\\")
+trainLCounts = maxColors(trainLFiles)
+os.chdir("..\\test-Lall")
+testLCounts = maxColors(testLFiles)
+os.chdir("..\\Train-U")
+trainUCounts = maxColors(trainUFiles)
+os.chdir("..\\Test-U")
+testUCounts = maxColors(testUFiles)
+#see which files have the most colors
+#this may include different colors in each file
+def multiMax(s):
+    return s.index[s == s.max()].tolist()
+trainLMI = multiMax(trainLCounts["count"])
+trainLCounts.iloc[trainLMI]
+testLMI = multiMax(testLCounts["count"])
+testLCounts.iloc[testLMI]
+trainUMI = multiMax(trainUCounts["count"])
+trainUCounts.iloc[trainUMI]
+testUMI = multiMax(testUCounts["count"])
+testUCounts.iloc[testUMI]
+#investigate the files
+def readAndPlot(fileString):
+    m = pv.read(fileString)
+    return m.plot(scalars="RGBA", rgb=True)
+os.chdir(dataPath+"train-Lall\\")
+readAndPlot("008_L.ply")
+os.chdir(dataPath+"test-Lall\\")
+readAndPlot("016_L.ply")
+os.chdir("..\\Train-U")
+readAndPlot("008_U.ply")
+os.chdir("..\\Test-U")
+readAndPlot("003_U.ply")
