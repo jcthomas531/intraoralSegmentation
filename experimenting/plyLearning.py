@@ -244,10 +244,15 @@ def readAndPlot(fileString):
     m = pv.read(fileString)
     return m.plot(scalars="RGBA", rgb=True)
 os.chdir(dataPath+"train-Lall\\")
-readAndPlot("008_L.ply")
+readAndPlot("076_L.ply")
 os.chdir(dataPath+"test-Lall\\")
 readAndPlot("016_L.ply")
 os.chdir("..\\Train-U")
-readAndPlot("008_U.ply")
+readAndPlot("076_U.ply")
 os.chdir("..\\Test-U")
-readAndPlot("003_U.ply")
+readAndPlot("077_U.ply")
+
+#looking at one of the predicted outcomes from our simple training
+os.getcwd()
+os.chdir("pred_global")
+readAndPlot("029_L.ply")
