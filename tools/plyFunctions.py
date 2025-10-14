@@ -2,9 +2,9 @@
 import pandas as pd
 import pyvista as pv
 from  plyfile import PlyData
+import numpy as np
 
-
-
+###############################################################################
 
 #function that reads in a ply file and formats in how I like
 #this will require PlyData and pandas package
@@ -25,10 +25,11 @@ def plyRead(file):
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
 
+###############################################################################
 
-#function that adds tooth number to the face data frame
+#function that adds tooth number and other tooth characteristics to the face data frame
 #this takes a face data frame that has been set up using plyRead
-def toothNum(face):
+def toothVars(face):
     #make copies of the dataframes so you dont edit in place
     faceC = face.copy()
     #color and tooth number associations
@@ -70,8 +71,9 @@ def toothNum(face):
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothNum(l76["face"])
+# l76["face"] = toothVars(l76["face"])
 
+###############################################################################
 
 #plot face and vertex dataframes, works with above but also raw reads from PlyData
 #takes the ply data as data frames so you can manipulate it beforehand
@@ -113,19 +115,133 @@ def plotPly(face, vertex):
     
     return surf.plot(scalars = "rgba", rgb = True)
 
-#example
+
 #example
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothNum(l76["face"])
+# l76["face"] = toothVars(l76["face"])
 # plotPly(face = l76["face"], vertex = l76["vert"])
 
+###############################################################################
 
 
+#a function like plotPly that returns the surface instead of the image so that
+#you can manipulate it and plot it later
+def giveSurf(face, vertex):
+    
+    #copy the dataframes so it doesnt edit in place
+    faceC = face.copy()
+    vertexC = vertex.copy()
+    
+    #faces
+    #get the number of vertexes for each shape (3 here bc triangles)
+    faceC["nVert"] = faceC["vertex_indices"].apply(len)
+    #make the vertices for the shape into columns
+    faceCExpand = pd.DataFrame(faceC["vertex_indices"].tolist(),
+                 columns=["v1", "v2", "v3"])
+    faceC = faceC.join(faceCExpand)
+    #order the data in the way that pyvista expects it and remove extra pieces
+    #the color codes come at a different step
+    faceCPV = faceC[["nVert", "v1", "v2", "v3"]]
+    faceCPV = faceCPV.to_numpy()
+    
+    #vertices
+    #extract the relavent columns
+    #this could also be done with the normalized coordinates if you want
+    vertexC = vertexC[["x", "y", "z"]]
+    #make it how pyvista likes
+    vertexC = vertexC.to_numpy()
+    
+    #use the vertex and face information to form the mesh
+    surf = pv.PolyData(vertexC, faceCPV)
+    
+    #colors
+    colors_ = faceC[["red", "green", "blue", "alpha"]]
+    colors_ = colors_.to_numpy()
+    #add the color information to the mesh
+    surf.cell_data["rgba"] = colors_
+    
+    return surf
+
+#example
+# import os
+# os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
+# l76 = plyRead("076_L.ply")
+# l76["face"] = toothVars(l76["face"])
+# s1 = giveSurf(face = l76["face"], vertex = l76["vert"])
+# plotTest = pv.Plotter()
+# plotTest.add_mesh(s1, scalars = "rgba", rgb = True)
+# plotTest.show()
 
 
+###############################################################################
 
+#function that highlights a series of tooth numbers highlights them in color
+#this does not check to make sure the number requested is in that arch, but
+#that would be pretty easy to add
+def toothHigh(face, vertex, toothNums):
+    #make copies of the dataframes so you dont edit in place
+    faceC = face.copy()
+    vertexC = vertex.copy()
+    #make all colors besides the one we are looking at white
+    faceC["red"] = np.where(faceC["toothNum"].isin(toothNums), faceC["red"], 255)
+    faceC["green"] = np.where(faceC["toothNum"].isin(toothNums), faceC["green"], 255)
+    faceC["blue"] = np.where(faceC["toothNum"].isin(toothNums), faceC["blue"], 255)
+    return plotPly(face = faceC, vertex = vertexC)
+#example
+# import os
+# os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
+# l76 = plyRead("076_L.ply")
+# l76["face"] = toothVars(l76["face"])
+# toothHigh(l76["face"], l76["vert"], ["17", "30"])
+
+
+###############################################################################
+
+#function that calculates the centroids for all teethtype in the face data
+#its output is a dataframe and it includes "gum" centroid as well
+#designed to work in the workflow established by previous functions
+def toothCentroids(face, vertex):
+    #make a copy of the data sets so we dont edit in place
+    faceC = face.copy()
+    vertexC = vertex.copy()
+    #first we get all of the unique teeth in the face data
+    #i am going to keep "gum" in here, we can discard it later
+    uTeeth = faceC["toothNum"].unique()
+    #make a data frame to hold all of the centroids
+    centHolder = pd.DataFrame(np.nan, index=range(len(uTeeth)),
+                              columns=["toothNum", "x", "y", "z"])
+    centHolder["toothNum"] = uTeeth
+    #loop through all uTeeth values
+    for i in range(len(centHolder)):
+        toothi = centHolder["toothNum"][i]
+        #subset to only include observations with specified tooth num, then take just the vertex
+        #indices column, then "explode" the lists into individual values, then get just 
+        #the unique ones, then make it into a list
+        vertInd = faceC[faceC["toothNum"] == toothi]["vertex_indices"].explode().unique().tolist()
+        #now we want to take those indices and subset the vertex information to only 
+        #include those, also take only the x,y,z coordinate
+        vertVals = vertexC.iloc[vertInd,][["x", "y", "z"]]
+        #calculate and store the centriods
+        centHolder.iloc[i,range(1, 4)] = vertVals.mean()
+    
+    return centHolder
+
+#example
+# import os
+# os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
+# l76 = plyRead("076_L.ply")
+# l76["face"] = toothVars(l76["face"])
+# tc = toothCentroids(face = l76["face"], vertex = l76["vert"])
+# #can then be visualized via
+# s1 = giveSurf(face = l76["face"], vertex = l76["vert"])
+# plotTest = pv.Plotter()
+# plotTest.add_mesh(s1, scalars = "rgba", rgb = True)
+# plotTest.add_points(np.array(tc.iloc[:,range(1,4)]),
+#                     color = "black", point_size=10,
+#                     render_points_as_spheres=True)
+# plotTest.show()
 
 
 
