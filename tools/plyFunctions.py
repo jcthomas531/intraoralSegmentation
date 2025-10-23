@@ -180,6 +180,7 @@ def giveSurf(face, vertex):
 #function that highlights a series of tooth numbers highlights them in color
 #this does not check to make sure the number requested is in that arch, but
 #that would be pretty easy to add
+#it would also be nice to have a version of this that also returned just the surface
 def toothHigh(face, vertex, toothNums):
     #make copies of the dataframes so you dont edit in place
     faceC = face.copy()
