@@ -1,4 +1,4 @@
 #ignoring specific folders
-fastTgcn/__pycache__/
-fastTgcn/experiment/
-fastTgcn/pred_global/
+fastTgcnBaby/__pycache__/
+fastTgcnBaby/experiment/
+fastTgcnBaby/pred_global/
