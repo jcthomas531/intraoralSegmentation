@@ -134,7 +134,7 @@ if __name__ == "__main__":
             print('Learning rate: %f' % (lr))
             print("loss: %f" % (np.mean(his_loss)))
             # writer.add_scalar("loss", np.mean(his_loss), epoch)
-            metrics, mIoU, cat_iou, mAcc = test_semseg(model, test_loader, num_classes=17, generate_ply=True)
+            metrics, mIoU, cat_iou, mAcc, throwAway = test_semseg(model, test_loader, num_classes=17, generate_ply=True)
             print("Epoch %d, accuracy= %f, mIoU= %f, mACC= %f" % (epoch, metrics['accuracy'], mIoU, mAcc))
             logger.info("Epoch: %d, accuracy= %f, mIoU= %f, mACC= %f loss= %f" % (epoch, metrics['accuracy'], mIoU, mAcc, np.mean(his_loss)))
             # writer.add_scalar("accuracy", metrics['accuracy'], epoch)
