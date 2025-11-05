@@ -25,6 +25,7 @@ from Baseline import Baseline
 #from pct import PointTransformerSeg
 import random
 
+
 if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = '2'
     """-------------------------- parameters --------------------------------------"""
