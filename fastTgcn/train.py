@@ -60,14 +60,14 @@ if __name__ == "__main__":
         random.seed(1 + worker_id)
 
     """-------------------------------- Dataloader --------------------------------"""
-    # train_dataset_4 = plydataset("data/train-U-n", 'train', 'meshsegnet')
+    # train_dataset_4 = plydataset("./../IOSSegData/train-U", 'train', 'meshsegnet')
     # train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=8,worker_init_fn=worker_init_fn)
-    # test_dataset_4 = plydataset("data/test-U", 'test', 'meshsegnet')
+    # test_dataset_4 = plydataset("./../IOSSegData/test-U", 'test', 'meshsegnet')
     # test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=8)
 
-    train_dataset_4 = plydataset("data/train-L", 'train', 'meshsegnet')
+    train_dataset_4 = plydataset("./../IOSSegData/train-L", 'train', 'meshsegnet')
     train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=8, worker_init_fn=worker_init_fn)
-    test_dataset_4 = plydataset("data/test-L", 'test', 'meshsegnet')
+    test_dataset_4 = plydataset("./../IOSSegData/test-L", 'test', 'meshsegnet')
     test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=8)
 
     """--------------------------- Build Network and optimizer----------------------"""
