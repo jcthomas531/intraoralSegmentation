@@ -1,8 +1,8 @@
 #!/bin/bash
 #$ -l ngpus=1
 #$ -pe smp 64
-#$ -o fastTgcnBabyOut.o
-#$ -e fastTgcnBabyError.e
+#$ -o outputFiles/fastTgcnOut.o
+#$ -e outputFiles/fastTgcnError.e
 
 
 
