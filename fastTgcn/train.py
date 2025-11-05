@@ -2,7 +2,7 @@ from dataloader import plydataset
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-#import time
+import time
 import numpy as np
 import os
 # from tensorboardX import SummaryWriter
@@ -11,7 +11,7 @@ from pathlib import Path
 import torch.nn.functional as F
 import datetime
 import logging
-#from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold
 from utils import test_semseg
 from loss import IoULoss, DiceLoss
 #from TSGCNet import TSGCNet
