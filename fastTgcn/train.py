@@ -2,7 +2,7 @@ from dataloader import plydataset
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import time
+#import time
 import numpy as np
 import os
 # from tensorboardX import SummaryWriter
@@ -11,18 +11,18 @@ from pathlib import Path
 import torch.nn.functional as F
 import datetime
 import logging
-from sklearn.model_selection import StratifiedKFold
+#from sklearn.model_selection import StratifiedKFold
 from utils import test_semseg
 from loss import IoULoss, DiceLoss
-from TSGCNet import TSGCNet
-from TestModel import TestModel
-from PointNet import PointNetDenseCls
-from PointNetplus import PointNet2
-from MeshSegNet import MeshSegNet
+#from TSGCNet import TSGCNet
+#from TestModel import TestModel
+#from PointNet import PointNetDenseCls
+#from PointNetplus import PointNet2
+#from MeshSegNet import MeshSegNet
 from Baseline import Baseline
-from ablation import ablation
-from OurMethod import SGNet
-from pct import PointTransformerSeg
+#from ablation import ablation
+#from OurMethod import SGNet
+#from pct import PointTransformerSeg
 import random
 
 if __name__ == "__main__":
