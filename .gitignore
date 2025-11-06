@@ -2,6 +2,9 @@
 fastTgcnBaby/__pycache__/
 fastTgcnBaby/experiment/
 fastTgcnBaby/pred_global/
+fastTgcn/__pycache__/
+fastTgcn/experiment/
+fastTgcn/pred_global/
 *.o
 *.e
 
