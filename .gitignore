@@ -5,6 +5,7 @@ fastTgcnBaby/pred_global/
 fastTgcn/__pycache__/
 fastTgcn/experiment/
 fastTgcn/pred_global/
+tools/__pycache__/
 *.o
 *.e
 
