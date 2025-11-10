@@ -8,4 +8,4 @@ fastTgcn/pred_global/
 tools/__pycache__/
 *.o
 *.e
-
+fastTgcnEasy/__pycache__/
