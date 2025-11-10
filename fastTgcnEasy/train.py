@@ -1,3 +1,9 @@
+#for testing
+# import os
+# os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcnEasy")
+# os.getcwd()
+
+
 from dataloader import plydataset
 import torch
 from torch.utils.data import DataLoader
@@ -24,6 +30,25 @@ from Baseline import Baseline
 #from OurMethod import SGNet
 #from pct import PointTransformerSeg
 import random
+
+
+
+
+
+
+#this if __name__ == "__main__" statement here prevents the code from being run
+#if this function is imported into another script
+#see: https://www.reddit.com/r/learnpython/comments/eb57p0/what_is_the_point_of_name_main_in_python_programs/
+
+
+
+
+
+def fastTgcnEasy()
+
+
+
+
 
 
 if __name__ == "__main__":
