@@ -12,7 +12,7 @@ import plyFunctions as pf
 
 os.chdir(dirPath + predExt)
 #lets start by investigating 001_L
-l01 = pf.plyRead("100_L.ply")
+l01 = pf.plyRead("059_L.ply")
 l01["face"] = pf.toothVars(l01["face"])
 pf.plotPly(face = l01["face"], vertex = l01["vert"])
 
