@@ -38,16 +38,28 @@ def Adj_matrix_gen(face):
 
     return adj
 
-def get_data(path=""):
-    labels = (
-        # [255, 0, 0],[255, 255, 0], [0, 255, 0], [0, 255, 255],
-        #       [0, 0, 255], [255, 0, 255], [30, 144, 255], [0, 255, 127], [127, 255, 0],
-        #       [255, 246, 143],[60, 179, 113], [255, 106, 106], [131, 111, 255], [255, 211, 155], [255, 99, 71],[155, 48, 255],
-               [255, 48, 48],[0, 191, 255], [255, 165, 0], [202, 255, 112],
-               [200, 255, 255], [255, 228, 255], [255, 155, 255], [255, 69, 0], [139, 0, 0],
-               [144, 238, 144],[0, 139, 139], [0, 0, 139], [139, 0, 139], [255, 105, 180], [230, 230, 250],[255, 228, 181],
-               [255, 255, 255]
-              )
+def get_data(arch, path=""):
+    #check arguements
+    if arch not in {"l", "u"}:
+        raise ValueError("Arguement Arch must be either 'l' or 'u'")
+    
+    
+    #labels based on if upper or lower arch
+    if arch == "l":
+        labels = (
+                   [255, 48, 48],[0, 191, 255], [255, 165, 0], [202, 255, 112],
+                   [200, 255, 255], [255, 228, 255], [255, 155, 255], [255, 69, 0], [139, 0, 0],
+                   [144, 238, 144],[0, 139, 139], [0, 0, 139], [139, 0, 139], [255, 105, 180], [230, 230, 250],[255, 228, 181],
+                   [255, 255, 255]
+                  )
+    elif arch == "u":
+        labels = (
+            [255, 0, 0],[255, 255, 0], [0, 255, 0], [0, 255, 255],
+                  [0, 0, 255], [255, 0, 255], [30, 144, 255], [0, 255, 127], [127, 255, 0],
+                  [255, 246, 143],[60, 179, 113], [255, 106, 106], [131, 111, 255], [255, 211, 155], [255, 99, 71],[155, 48, 255],
+                  )
+    
+    
     row_data = PlyData.read(path)  # read ply file
     points = np.array(pd.DataFrame(row_data.elements[0].data))
     faces = np.array(pd.DataFrame(row_data.elements[1].data))
@@ -85,6 +97,8 @@ def get_data(path=""):
     return index_face, points_face, label_face, label_face_onehot, points, index_face
 
 
+#I have left this alone for now as i am not sure why it is here, not editing to 
+#have an arch arguement at this time
 # def get_data(path=""):
 #     labels = ([255,255,255], [255, 0, 0], [255, 125, 0], [255, 255, 0], [0, 255, 0], [0, 255, 255],
 #               [0, 0, 255], [255, 0, 255])
@@ -123,8 +137,8 @@ def get_data(path=""):
 
 
 
-
-def generate_plyfile(index_face, point_face, label_face, path= " "):
+#added arch arguement
+def generate_plyfile(index_face, point_face, label_face, arch, path= " "):
     """
     Input:
         index_face: index of points in a face [N, 3]
@@ -133,6 +147,13 @@ def generate_plyfile(index_face, point_face, label_face, path= " "):
         path: path to save new generated ply file
     Return:
     """
+    
+    #check arguements
+    if arch not in {"l", "u"}:
+        raise ValueError("Arguement Arch must be either 'l' or 'u'")
+    
+    
+    
     unique_index = np.unique(index_face.flatten())  # get unique points index
     flag = np.zeros([unique_index.max()+1, 2]).astype('uint64')
     order = 0
@@ -167,15 +188,25 @@ def generate_plyfile(index_face, point_face, label_face, path= " "):
 
         # labels_change_color = [[255, 255, 255], [255, 0, 0], [255, 125, 0], [255, 255, 0], [0, 255, 0], [0, 255, 255],
         #           [0, 0, 255], [255, 0, 255]]
-        labels_change_color = [
-                               # [255, 0, 0],[255, 255, 0], [0, 255, 0], [0, 255, 255],
-                               # [0, 0, 255], [255, 0, 255], [30, 144, 255], [0, 255, 127], [127, 255, 0],
-                               # [255, 246, 143],[60, 179, 113], [255, 106, 106], [131, 111, 255], [255, 211, 155], [255, 99, 71],[155, 48, 255],
-                               [255, 48, 48],[0, 191, 255], [255, 165, 0], [202, 255, 112],
-                               [200, 255, 255], [255, 228, 255], [255, 155, 255], [255, 69, 0], [139, 0, 0],
-                               [144, 238, 144],[0, 139, 139], [0, 0, 139], [139, 0, 139], [255, 105, 180], [230, 230, 250],[255, 228, 181],
-                               [255, 255, 255]
-                               ]
+        
+        
+        #labels based on if upper or lower arch
+        if arch == "l":
+            labels_change_color = (
+                       [255, 48, 48],[0, 191, 255], [255, 165, 0], [202, 255, 112],
+                       [200, 255, 255], [255, 228, 255], [255, 155, 255], [255, 69, 0], [139, 0, 0],
+                       [144, 238, 144],[0, 139, 139], [0, 0, 139], [139, 0, 139], [255, 105, 180], [230, 230, 250],[255, 228, 181],
+                       [255, 255, 255]
+                      )
+        elif arch == "u":
+            labels_change_color = (
+                [255, 0, 0],[255, 255, 0], [0, 255, 0], [0, 255, 255],
+                      [0, 0, 255], [255, 0, 255], [30, 144, 255], [0, 255, 127], [127, 255, 0],
+                      [255, 246, 143],[60, 179, 113], [255, 106, 106], [131, 111, 255], [255, 211, 155], [255, 99, 71],[155, 48, 255],
+                      )
+        
+        
+
 
         for i, data in enumerate(index_face):  # write new point index for every face
             RGB = labels_change_color[label_face[i, 0]]  # Get RGB value according to face label
@@ -187,18 +218,19 @@ def generate_plyfile(index_face, point_face, label_face, path= " "):
 
 
 class plydataset(Dataset):
-
-    def __init__(self, path="./../IOSSegData/train", mode='train', model='normal'):
+    #default path removed and arch argument added
+    def __init__(self, path, arch, mode='train', model='normal'):
         self.mode = mode
         self.model = model
         self.root_path = path
         self.file_list = os.listdir(path)
+        self.arch = arch
     def __len__(self):
         return len(self.file_list)
 
     def __getitem__(self, item):
         read_path = os.path.join(self.root_path, self.file_list[item])
-        index_face, points_face, label_face, label_face_onehot, points, RGB_face = get_data(path=read_path)
+        index_face, points_face, label_face, label_face_onehot, points, RGB_face = get_data(path=read_path, arch = self.arch)
         RGB_face = torch.from_numpy(RGB_face.astype(float))
         raw_points_face = points_face.copy()
 
@@ -351,12 +383,14 @@ class plydataset(Dataset):
 
 
 
-
-if __name__ == "__main__":
-    # print(" ")
-    index_face, points_face, label_face, label_face_onehot, points, _ = get_data('./../IOSSegData/test/001.ply')
-    print(index_face)
-    # print(index_face.shape, points_face.shape, label_face.shape, label_face_onehot.shape, points.shape)
+#i am commenting this out for the time being. This is run only if the script is 
+#run interactively, which I am not doing. to be in line with the changes I have 
+#made, get_data() should have an arch arguement
+# if __name__ == "__main__":
+#     # print(" ")
+#     index_face, points_face, label_face, label_face_onehot, points, _ = get_data('./../IOSSegData/test/001.ply')
+#     print(index_face)
+#     # print(index_face.shape, points_face.shape, label_face.shape, label_face_onehot.shape, points.shape)
 
 
 

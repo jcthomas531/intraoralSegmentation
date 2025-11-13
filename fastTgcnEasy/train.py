@@ -51,13 +51,17 @@ import random
 #in the correct locations even when inside a function
 
 #note 2
-#THIS BRINGS IN THE RIGHT DATA BUT WHAT ABOUT THE LABELING FROM FUNCTIONS IN dataloader.py
+#set up to use arch as an arguement, down stream functions that vary by arch were 
+#also updated to use this dynamically
 
-#note 3
-#CHANGE FILE PATHS FOR DATA TO ARGUEMENTS NOT HARDCODED
+
+#next step
+#if this can run fine, it would be nice to be able have the outputs labeled with
+#the arch as well
+
 
 def fastTgcnEasy(arch, testPath, trainPath, batch_size = 1, k = 32,
-                 numWorkers = 8):
+                 numWorkers = 8, epochs = 301):
     ###########################################################################
     #checking function arguements
     ###########################################################################
@@ -116,14 +120,14 @@ def fastTgcnEasy(arch, testPath, trainPath, batch_size = 1, k = 32,
     #been left in error?
     """-------------------------------- Dataloader --------------------------------"""
     if arch == "l":
-        train_dataset_4 = plydataset("./../IOSSegData/train-L", 'train', 'meshsegnet')
+        train_dataset_4 = plydataset(path = trainPath, arch = arch, mode = 'train', model = 'meshsegnet')
         train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=numWorkers, worker_init_fn=worker_init_fn)
-        test_dataset_4 = plydataset("./../IOSSegData/test-L", 'test', 'meshsegnet')
+        test_dataset_4 = plydataset(path = testPath, arch = arch, mode = 'test', model = 'meshsegnet')
         test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=numWorkers)
     elif arch == "u":
-        train_dataset_4 = plydataset("./../IOSSegData/train-U", 'train', 'meshsegnet')
+        train_dataset_4 = plydataset(path = trainPath, arch = arch, mode = 'train', model = 'meshsegnet')
         train_loader_4 = DataLoader(train_dataset_4, batch_size=batch_size, shuffle=True, num_workers=numWorkers,worker_init_fn=worker_init_fn)
-        test_dataset_4 = plydataset("./../IOSSegData/test-U", 'test', 'meshsegnet')
+        test_dataset_4 = plydataset(path = testPath, arch = arch, mode = 'test', model = 'meshsegnet')
         test_loader_4 = DataLoader(test_dataset_4, batch_size=1, shuffle=True, num_workers=numWorkers)
         
     #THIS BRINGS IN THE RIGHT DATA BUT WHAT ABOUT THE LABELING FROM FUNCTIONS IN dataloader.py
@@ -186,7 +190,7 @@ def fastTgcnEasy(arch, testPath, trainPath, batch_size = 1, k = 32,
     iou_loss = IoULoss()
     dice_loss = DiceLoss()
     # iou_label = torch.ones((1, 17)).float().cuda()
-    for epoch in range(0, 301):
+    for epoch in range(0, epochs):
         train_loader = train_loader_4
         test_loader = test_loader_4
         scheduler.step()
@@ -227,7 +231,8 @@ def fastTgcnEasy(arch, testPath, trainPath, batch_size = 1, k = 32,
             print('Learning rate: %f' % (lr))
             print("loss: %f" % (np.mean(his_loss)))
             # writer.add_scalar("loss", np.mean(his_loss), epoch)
-            metrics, mIoU, cat_iou, mAcc, throwAway = test_semseg(model, test_loader, num_classes=17, generate_ply=True)
+            metrics, mIoU, cat_iou, mAcc, throwAway = test_semseg(model = model, loader = test_loader, arch = arch,
+                                                                  num_classes=17, generate_ply=True)
             print("Epoch %d, accuracy= %f, mIoU= %f, mACC= %f" % (epoch, metrics['accuracy'], mIoU, mAcc))
             logger.info("Epoch: %d, accuracy= %f, mIoU= %f, mACC= %f loss= %f" % (epoch, metrics['accuracy'], mIoU, mAcc, np.mean(his_loss)))
             # writer.add_scalar("accuracy", metrics['accuracy'], epoch)

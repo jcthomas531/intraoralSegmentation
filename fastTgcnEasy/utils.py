@@ -62,8 +62,8 @@ def compute_mACC(pred, label_face):
         s += acc
     return s / 17
 
-
-def test_semseg(model, loader, num_classes = 8, gpu=True, generate_ply=False):
+#added arch arguement
+def test_semseg(model, loader, arch, num_classes = 8, gpu=True, generate_ply=False):
     '''
     Input
     :param model:
@@ -76,6 +76,15 @@ def test_semseg(model, loader, num_classes = 8, gpu=True, generate_ply=False):
     hist_acc: history of accuracy
     cat_iou: IoU for o category
     '''
+    
+    
+    #check arguements
+    if arch not in {"l", "u"}:
+        raise ValueError("Arguement Arch must be either 'l' or 'u'")
+    
+    
+    
+    
     iou_tabel = np.zeros((num_classes,3))
     metrics = defaultdict(lambda:list())
     dice_loss = DiceLoss()
@@ -88,7 +97,7 @@ def test_semseg(model, loader, num_classes = 8, gpu=True, generate_ply=False):
 
     for batch_id, (index, points, label_face, label_face_onehot, name, raw_points_face, idx_face) in tqdm(enumerate(loader), total=len(loader), smoothing=0.9):
         batchsize, num_point, _ = points.size()
-        points_face = raw_points_face[0].numpy()
+        point_face = raw_points_face[0].numpy()
         index_face = index[0].numpy()
         coordinate = points.transpose(2,1)
         normal = points[:, :, 12:]
@@ -115,7 +124,8 @@ def test_semseg(model, loader, num_classes = 8, gpu=True, generate_ply=False):
 
             #label_face=label_optimization(index_face, label_face)
 
-            generate_plyfile(index_face, points_face, label_face, path=("pred_global/%s") % name)
+            generate_plyfile(index_face = index_face, point_face = point_face,
+                             label_face = label_face, arch = arch, path=("pred_global/%s") % name)
     iou_tabel[:,2] = iou_tabel[:,0] /iou_tabel[:,1]
     # iou = np.where(iou_tabel<=1.)
     hist_acc += metrics['accuracy']
