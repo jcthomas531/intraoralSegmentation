@@ -9,3 +9,4 @@ tools/__pycache__/
 *.o
 *.e
 fastTgcnEasy/__pycache__/
+fastTcgnEasy/experiment/
