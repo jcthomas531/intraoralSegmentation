@@ -9,4 +9,5 @@ tools/__pycache__/
 *.o
 *.e
 fastTgcnEasy/__pycache__/
-fastTcgnEasy/experiment/
+fastTgcnEasy/experiment/
+fastTgcnEasy/pred_global/
