@@ -10,8 +10,8 @@
 #should alredy be in the proper working directory
 import train
 train.fastTgcnEasy(arch = "l",
-                   testPath = "Y:\\dissModels\\intraoralSegmentation\\IOSSegData\\test-L-Small",
-                   trainPath = "Y:\\dissModels\\intraoralSegmentation\\IOSSegData\\train-L-Small",
+                   testPath = "Users\\jthomas48\\dissModels\\intraoralSegmentation\\IOSSegData\\test-L-Small",
+                   trainPath = "Users\\jthomas48\\dissModels\\intraoralSegmentation\\IOSSegData\\train-L-Small",
                    batch_size = 1,
                    k = 32,
                    numWorkers = 8,
