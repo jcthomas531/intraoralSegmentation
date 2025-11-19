@@ -3,12 +3,14 @@ import pandas as pd
 import pyvista as pv
 from  plyfile import PlyData
 import numpy as np
+import pdb
 
 ###############################################################################
 
 #function that reads in a ply file and formats in how I like
 #this will require PlyData and pandas package
 def plyRead(file):
+    #pdb.set_trace()
     #read in the object
     plyObject = PlyData.read(file)
     #get the vertex and face data
@@ -28,14 +30,16 @@ def plyRead(file):
 ###############################################################################
 
 #function that adds tooth number and other tooth characteristics to the face data frame
-#this takes a face data frame that has been set up using plyRead
-def toothVars(face):
+#face takes a face data frame that has been set up using plyRead
+#arch takes a string "L" or "U" denoting the upper or lower arch
+def toothVars(face, arch):
+    #pdb.set_trace()
     #make copies of the dataframes so you dont edit in place
     faceC = face.copy()
     #color and tooth number associations
     uNumCol = pd.DataFrame(
         {
-         "toothNum": ["16","15","14","13","12","11","10","3","2","1","4","9","5","6","8","4","gum"],
+         "toothNum": ["16","15","14","13","12","11","10","3","2","1","4","9","5","6","8","7","gum"], 
          "color": ['155-048-255', '255-099-071', '255-211-155','131-111-255','255-106-106',
                    '060-179-113', '255-246-143', '255-000-255', '030-144-255', '000-255-127',
                    '000-255-255', '127-255-000', '255-255-000', '000-255-000', '255-000-000',
@@ -56,22 +60,22 @@ def toothVars(face):
     #the upper face data frame. This will always be at least 1 bc of the gums
     #if this value is above 1, then we have an upper arch, if this value is 1
     #then we have a lower arch
-    upperColCount = uNumCol["color"].isin(faceC["color"]).sum()
-    if upperColCount > 1:
+    #upperColCount = uNumCol["color"].isin(faceC["color"]).sum()
+    if arch == "U":
         faceC = faceC.merge(uNumCol, on="color", how = "left", validate = "many_to_one")
         faceC["arch"] = "upper"
-    elif upperColCount == 1:
+    elif arch == "L":
         faceC = faceC.merge(lNumCol, on="color", how = "left", validate = "many_to_one")
         faceC["arch"] = "lower"
     else:
-        ValueError("could not identify input as upper or lower arch")
+        ValueError("arch arguement must be either 'L' or 'U'")
     #return updated dataframe
     return faceC
 #example
 # import os
-# os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
-# l76 = plyRead("076_L.ply")
-# l76["face"] = toothVars(l76["face"])
+# os.chdir("P:\\cph\\BIO\\Faculty\\gown\\research\\ThesisProjects\\Thomas\\IOSSegData\\train")
+# l07 = plyRead("007_L.ply")
+# l07["face"] = toothVars(l07["face"], arch = "L")
 
 ###############################################################################
 
@@ -120,8 +124,42 @@ def plotPly(face, vertex):
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothVars(l76["face"])
+# l76["face"] = toothVars(l76["face"], arch = "L")
 # plotPly(face = l76["face"], vertex = l76["vert"])
+
+###############################################################################
+
+#a comination of the first two functions that does them both at the same time
+#takes file as a string
+#arch takes a string "L" or "U" denoting which arch we are looking at
+def readAndFormat(file, arch):
+    pat = plyRead(file)
+    pat["face"] = toothVars(pat["face"], arch=arch)
+    return pat
+
+#example
+# import os
+# os.chdir("P:\\cph\\BIO\\Faculty\\gown\\research\\ThesisProjects\\Thomas\\IOSSegData\\test")
+# readAndFormat("001_L.ply", arch = "L")
+
+
+
+
+###############################################################################
+
+#a combination of the three above functions that simply reads in the ply file,
+#formats it, and the plots it. 
+#fileName is a string
+#arch takes a string "L" or "U" denoting which arch we are looking at
+def readAndPlot(file, arch):
+    pat = readAndFormat(file = file, arch = arch)
+    return plotPly(face = pat["face"], vertex = pat["vert"])
+
+#example
+# import os
+# os.chdir("P:\\cph\\BIO\\Faculty\\gown\\research\\ThesisProjects\\Thomas\\IOSSegData\\test")
+# readAndPlot("001_L.ply", arch = "L")
+
 
 ###############################################################################
 
@@ -168,7 +206,7 @@ def giveSurf(face, vertex):
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothVars(l76["face"])
+# l76["face"] = toothVars(l76["face"], arch = "L")
 # s1 = giveSurf(face = l76["face"], vertex = l76["vert"])
 # plotTest = pv.Plotter()
 # plotTest.add_mesh(s1, scalars = "rgba", rgb = True)
@@ -194,7 +232,7 @@ def toothHigh(face, vertex, toothNums):
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothVars(l76["face"])
+# l76["face"] = toothVars(l76["face"], arch = "L")
 # toothHigh(l76["face"], l76["vert"], ["17", "30"])
 
 
@@ -233,7 +271,7 @@ def toothCentroids(face, vertex):
 # import os
 # os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\fastTgcn\\data\\train-Lall")
 # l76 = plyRead("076_L.ply")
-# l76["face"] = toothVars(l76["face"])
+# l76["face"] = toothVars(l76["face"], arch = "L")
 # tc = toothCentroids(face = l76["face"], vertex = l76["vert"])
 # #can then be visualized via
 # s1 = giveSurf(face = l76["face"], vertex = l76["vert"])
