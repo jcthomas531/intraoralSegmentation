@@ -283,15 +283,19 @@ lNumCol = lNumCol.assign(
 
 
 if groupiArch == "lower":
-    #inialize a norm holder
+    #initialize a norm holder in color dataframe
+    uNumCol["diffNorm"] = pd.NA
     for j in range(len(uNumCol)):
         #extract color from mapping df
         colj = lNumCol.iloc[j, range(2,5)]
+        #these are strings rn, switch to numeric
+        groupiCol = pd.to_numeric(groupiCol)
+        colj = pd.to_numeric(colj)
         #find the difference vector
         #this does not work...
         diffVec = groupiCol - colj
         #take the l2 norm
-        #diffNorm 
+        uNumCol["diffNorm"].iloc[j] = np.linalg.norm(diffVec, ord = 2)
 elif groupiArch == "upper":
     #code
     1
@@ -299,34 +303,88 @@ else:
     ValueError("data does not have an arch column taking values 'lower' and 'upper'")
 
 
+#which tooth "should" it be
+uNumCol["diffNorm"].idxmin()
+#then overwrite the color
 
 
-def colCompare(x):
-    #copy just in case
-    xC = x.copy()
+
+
+
+
+###############################################################################
+#lets functionize this a bit at a time so its not impossible at the end
+dat=pf.readAndFormat("036_L.ply", "L")
+#dat will take in an object created by pf.readAndFormat()
+
+def colorCleaner(dat):
+    #extract if this is an upper or a lower arch
+    arch = dat["face"]["arch"].iloc[0] #just taking the first one as they will all be the same
+  #extract the faces that have missing toothNum
+    naFaces = dat["face"][dat["face"]["toothNum"].isna()]
+    
+    #if there is no missing toothNum, this function should stop
+    if len(naFaces.index) == 0:
+        raise Exception("No missing faces missing a toothNum value")
+    
+    #create a dictionary with datasets for each color that has a missing toothNum
+    #this will often be just a single 
+    naFacesGrp = {g: df for g, df in naFaces.groupby("color")}
+    
+    #get the color and tooth number data frames
+    if arch == "upper":
+        numCol = pf.colorNumFrame("U")
+    elif arch == "lower":
+        numCol = pf.colorNumFrame("L")
+    else:
+        raise Exception("The arch column in the face data is not 'lower' or 'upper' and it must be one of these two things")
+    
+    
+    
+    #for each of these groups in the dictionary, we want to extract the color values and compare them to 
+    #each of the colors for their arch
+    for i in range(len(naFacesGrp)):
+        
+        groupi = list(naFacesGrp.values())[i]
+        groupiCol = groupi[["red", "green", "blue"]].iloc[0,:] #just taking the first one as they will all be the same
+        groupiCol = pd.to_numeric(groupiCol) #these are strings, switch to numeric
+        
+        
+        #check against each color that should be in this arch
+        #initialize a norm holder in color dataframe
+        numCol["diffNorm"] = pd.NA
+        for j in range(len(numCol)):
+            #extract color from mapping df
+            colj = numCol[["red", "green", "blue"]].iloc[j,:]
+            #find the difference vector
+            #this does not work...
+            diffVec = groupiCol - colj
+            #take the l2 norm
+            numCol.loc[j, "diffNorm"] = np.linalg.norm(diffVec, ord = 2)
+        
+        
+        #which tooth "should" it be
+        properNum = numCol["diffNorm"].idxmin()
+        
+        #overwrite the color and the tooth number in the original data and export it
+        
+        
+    return 1
+        
+    
+################################################################################    
     
 
 
 
-list(pat36LNaGroups.keys())
-
-list(pat36LNaGroups.values())[1]
-
-pat36LNaGroups[1]
-
-
-pat28LNaFace.groupby("color")
-#{key: val for ...}
-aa = {g: df for g, df in pat28LNaFace.groupby("color")}
 
 
 
-len(pat28LNaFace["color"].unique())
-
-for i in range(1):
-    print(i)
-
-
+#checking tpyes
+type(groupiCol.iloc[0])
+type(colj.iloc[0])
+groupiCol.dtype == "object" and all(isinstance(x, str) for x in groupiCol)
+pd.api.types.is_bool_dtype(groupiCol)
 
 
 
