@@ -1,5 +1,4 @@
 import os
-
 os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\tools")
 import plyFunctions as pf
 import pandas as pd
@@ -65,30 +64,6 @@ upperNaColors = [naColorExtract(pf.readAndFormat("045_U.ply", "U")),
                  naColorExtract(pf.readAndFormat("071_U.ply", "U"))
                  ]
 upperNaColorsU = list(set(np.concatenate(upperNaColors)))
-
-
-
-#pass fileName as a string
-def numExtract(fileName):
-    #extract patient information
-    #the r here means raw, avoids double escaping
-    #the function natrually outputs a list, so taking the first (and only) element
-    patNum = re.findall(pattern = r"^[0-9]{3}", string = fileName)[0]
-    patArch = re.findall(pattern = r"_([A-Z]{1})\.", string = fileName)[0]
-    #read in file 
-    pat = pf.readAndFormat(fileName, arch = patArch)
-    #extract summary information
-    numTeeth = len(pat["face"]["toothNum"].unique())-1 #subtract 1 for the gum group
-    numVerts = pat["vert"].shape[0]
-    numFaces = pat["face"].shape[0] 
-    anyNaTeeth = pat["face"]["toothNum"].isna().any()
-    return [patNum, patArch, numTeeth, numVerts, numFaces, anyNaTeeth]
-
-
-#this is like an apply
-datList = [numExtract(i) for i in os.listdir(trainPath)]
-dat = pd.DataFrame(datList, columns=['pat', 'arch', 'numTeeth', 'verts', 'faces', 'anyNaTeeth'])
-print(dat.to_string())
 
 
 ###############################################################################
