@@ -8,8 +8,8 @@ import numpy as np
 
 
 #for running exampls
-# trainPath = "P:\\cph\\BIO\\Faculty\\gown\\research\\ThesisProjects\\Thomas\\IOSSegData\\train"
-# os.chdir(trainPath)
+trainPath = "P:\\cph\\BIO\\Faculty\\gown\\research\\ThesisProjects\\Thomas\\IOSSegData\\train"
+os.chdir(trainPath)
 
 
 
@@ -32,14 +32,14 @@ def numExtract(fileName):
     numVerts = pat["vert"].shape[0]
     numFaces = pat["face"].shape[0] 
     anyNaTeeth = pat["face"]["toothNum"].isna().any()
-    return [patNum, patArch, numTeeth, numVerts, numFaces, anyNaTeeth]
+    return [fileName, patNum, patArch, numTeeth, numVerts, numFaces, anyNaTeeth]
 
 
 #examples
 # numExtract("036_L.ply")
 # #this is like an apply
 # datList = [numExtract(i) for i in os.listdir(trainPath)]
-# dat = pd.DataFrame(datList, columns=['pat', 'arch', 'numTeeth', 'verts', 'faces', 'anyNaTeeth'])
+# dat = pd.DataFrame(datList, columns=['fileName', 'pat', 'arch', 'numTeeth', 'verts', 'faces', 'anyNaTeeth'])
 # print(dat.to_string())
 
 ###############################################################################
