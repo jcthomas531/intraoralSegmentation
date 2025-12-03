@@ -4,5 +4,4 @@ There is an issue with the IOSSeg data. All tooth classification in the model is
 
 # Process
 
-* need to update colorCleaner() function to also overwrite the red, green, and blue columns in the original data. Right now it is just replacing the concatenated color as well as the NA tooth number.
 
