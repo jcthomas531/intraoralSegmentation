@@ -45,26 +45,147 @@ cleanTrain = cleanApplyer(trainNas)
 os.chdir(testDir)
 cleanTest = cleanApplyer(testNas)
 
+# step 3, check all of these changes
+cc.plotIssue(dat36L)
+dat36L = cc.colorCleaner(dat36L)
+pf.plotPly(dat36L["face"], dat36L["vert"])
 
 
 
+list(cleanTrain.values())[1]
+
+cc.colorCleaner(list(cleanTrain.values())[1])
+
+#functions that test for errors in the plotting and cleaning functions on the 
+#cleaned data, we are looking for these to throw back errors as this means there is 
+#nothing more to fix
+def plotError(dat):
+    try: 
+        cc.plotIssue(dat)
+    except ValueError:
+        return "proper response"
+    return "improper response, still color issues"
 
 
+def cleanError(dat):
+    try:
+        cc.colorCleaner(dat)
+    except Exception:
+        return "proper response"
+    return "improper response, still color issues"
+
+plotError(list(cleanTrain.values())[1])
+len(cleanTrain.values())
+len(cleanTrain)
+list(cleanTrain.keys())[1]
+
+
+
+#checking train data
+trainCheck = pd.DataFrame({
+    "fileName": [pd.NA]*len(cleanTrain),
+    "plotResponse": [pd.NA]*len(cleanTrain),
+    "cleanResponse": [pd.NA]*len(cleanTrain)
+    })
+for i in range(len(trainNas)):
+    trainCheck["fileName"].loc[i] = list(cleanTrain.keys())[i]
+    trainCheck["plotResponse"].loc[i] =plotError(list(cleanTrain.values())[i])
+    trainCheck["cleanResponse"].loc[i] = cleanError(list(cleanTrain.values())[i])
+    
+    
+#checking the test data
+testCheck = pd.DataFrame({
+    "fileName": [pd.NA]*len(cleanTest),
+    "plotResponse": [pd.NA]*len(cleanTest),
+    "cleanResponse": [pd.NA]*len(cleanTest)
+    })
+for i in range(len(testNas)):
+    testCheck["fileName"].loc[i] = list(cleanTest.keys())[i]
+    testCheck["plotResponse"].loc[i] =plotError(list(cleanTest.values())[i])
+    testCheck["cleanResponse"].loc[i] = cleanError(list(cleanTest.values())[i])
+    
+
+trainCheck
+testCheck
+
+#perfect, everything is how it should be
 
 #
 #now just gotta figure out how to export them lol
 #also check each of the cleaned files to make sure things actually went right
 #
+list(cleanTest.values())[1]["face"][["vertex_indices", "red"]]
+
+
+def faceFormatter(dat):
+    datC = dat.copy()
+    datC["face"] = datC["face"][["vertex_indices", "red", "green", "blue", "alpha"]]
+    return datC
 
 
 
 
 
-
-
-
+aaa = faceFormatter(list(cleanTest.values())[1])
 
 # step 3, export all of those files
+
+
+def write_ply(filename, data):
+    """
+    data["vert"] : pandas DataFrame with columns:
+        x, y, z, nx, ny, nz
+        
+    data["face"] : pandas DataFrame with columns:
+        vertex_indices (list of ints), red, green, blue, alpha
+    """
+
+    verts = data["vert"]
+    faces = data["face"]
+
+    n_verts = len(verts)
+    n_faces = len(faces)
+
+    with open(filename, "w") as f:
+        # ----- HEADER -----
+        f.write("ply\n")
+        f.write("format ascii 1.0\n")
+        f.write("comment VCGLIB generated\n")
+        f.write(f"element vertex {n_verts}\n")
+        f.write("property float x\n")
+        f.write("property float y\n")
+        f.write("property float z\n")
+        f.write("property float nx\n")
+        f.write("property float ny\n")
+        f.write("property float nz\n")
+        f.write(f"element face {n_faces}\n")
+        f.write("property list uchar int vertex_indices\n")
+        f.write("property uchar red\n")
+        f.write("property uchar green\n")
+        f.write("property uchar blue\n")
+        f.write("property uchar alpha\n")
+        f.write("end_header\n")
+
+        # ----- VERTEX DATA -----
+        for _, row in verts.iterrows():
+            f.write(f"{row.x} {row.y} {row.z} {row.nx} {row.ny} {row.nz}\n")
+
+        # ----- FACE DATA -----
+        for _, row in faces.iterrows():
+            indices = row.vertex_indices  # must be list-like
+            f.write(
+                f"{len(indices)} " +
+                " ".join(str(int(i)) for i in indices) + " " +
+                f"{int(row.red)} {int(row.green)} {int(row.blue)} {int(row.alpha)}\n"
+            )
+
+
+
+os.chdir("H:\\schoolFiles\\dissertation\\intraoralSegmentation\\testDir")
+write_ply("testPly.ply", aaa)
+
+#this seems to work, check that it can be read in with your functions
+
 
 
 #note that this will need to be exported and have the same exact format as the ones
