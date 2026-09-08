@@ -345,6 +345,32 @@ spatialTransDeps = [
 rafDeps = ["tools/readAndFormat.py"]
 
 
+##############################################################################
+#facilitating objects for local descriptors
+localDescrDir1 = grantDir + "iowaExpTest/localDescriptors/rugAnnotForm_cSOriMastRemesh_localDescr/"
+
+#phase and patient combinations
+iowaExpTestRAPhasePatCombos = (
+    [("pre", "Pre", pat) for pat in iowaExpTestRAPatsPre]
+    + [("post", "Post", pat) for pat in iowaExpTestRAPatsPre]
+    )
+#raw csv output files
+localDescr1OutputsCsv = [
+    localDescrDir1 + f"{phase}/{pat}{CPhase}_localDescr.csv"
+    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
+]
+#raw ply output files
+localDescr1OutputsPly = [
+    localDescrDir1 + f"{phase}/{pat}{CPhase}_localDescr.ply"
+    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
+]
+
+#labeled csvs 
+labeledDescr1Csv = [
+    localDescrDir1 + f"{phase}LabeledCsv/{pat}{CPhase}_localDescrLabel.csv"
+    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
+]
+
 ###############################################################################
 ##################################BEGIN RULES##################################
 ###############################################################################
@@ -445,7 +471,12 @@ rule all:
         #
         #spatial transformation matrices
         #
-        expand(iowaExpTestSpatialTransDir + "{seg1Pat}SpatialTransMats.pkl", seg1Pat = iowaExpTestRAPatsBoth)
+        expand(iowaExpTestSpatialTransDir + "{seg1Pat}SpatialTransMats.pkl", seg1Pat = iowaExpTestRAPatsBoth),
+        #local descriptors
+        "tools/cpp/localDescriptors/build/localDescriptors",
+        localDescr1OutputsCsv,
+        localDescr1OutputsPly,
+        labeledDescr1Csv
 
 
 rule masterArches:
@@ -555,6 +586,13 @@ rule segmentation:
 rule spatialTrans:
     input:
         expand(iowaExpTestSpatialTransDir + "{seg1Pat}SpatialTransMats.pkl", seg1Pat = iowaExpTestRAPatsBoth)
+
+rule localDescriptors:
+    input:
+        "tools/cpp/localDescriptors/build/localDescriptors",
+        localDescr1OutputsCsv,
+        localDescr1OutputsPly,
+        labeledDescr1Csv
 
 ###############################################################################
 #pipeline rules
@@ -1321,45 +1359,12 @@ rule getSpatialTransMats_iowaExpTestRA:
 
 
 #####################################
-#testing c++ stuff
+#local descriptors
+#see rule localDescriptors
 #THIS IS A PERFECT EXAMPLE OF HOW TO HAVE A SINGLE RULE RUN FOR MULTIPLE WILDCARDS
 #AND NOT HAVE TO MAKE SEPARATE RULES FOR EACH WILDCARD COMBO
-localDescrDir1 = grantDir + "iowaExpTest/localDescriptors/rugAnnotForm_cSOriMastRemesh_localDescr/"
+#SEE FACILITOR OBJECTS ABOVE
 
-#phase and patient combinations
-iowaExpTestRAPhasePatCombos = (
-    [("pre", "Pre", pat) for pat in iowaExpTestRAPatsPre]
-    + [("post", "Post", pat) for pat in iowaExpTestRAPatsPre]
-    )
-#raw csv output files
-localDescr1OutputsCsv = [
-    localDescrDir1 + f"{phase}/{pat}{CPhase}_localDescr.csv"
-    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
-]
-#raw ply output files
-localDescr1OutputsPly = [
-    localDescrDir1 + f"{phase}/{pat}{CPhase}_localDescr.ply"
-    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
-]
-
-#labeled csvs 
-labeledDescr1Csv = [
-    localDescrDir1 + f"{phase}LabeledCsv/{pat}{CPhase}_localDescrLabel.csv"
-    for phase, CPhase, pat in iowaExpTestRAPhasePatCombos
-]
-
-rule localDescriptors:
-    input:
-        "tools/cpp/localDescriptors/build/localDescriptors",
-        localDescr1OutputsCsv,
-        localDescr1OutputsPly,
-        labeledDescr1Csv
-
-
-#this was in before and seemed necessary when switching from local machine to hpc
-#rm tools/cpp/localDescriptors/build/CMakeCache.txt
-#
-#touch("tools/cpp/localDescriptors/localDescriptors_cmake.complete")
 rule compileCmakeLocalDescriptors:
     threads: 1
     resources:
@@ -1403,3 +1408,48 @@ rule localDescrLabeledCsv:
         python {input.script} {input.meshPath} {input.ldPath} {output.outPath}
         """
 
+
+#########################
+#remesh and feature extraction timing
+
+remeshPointsList = [8500]
+rule allRemesh:
+    input:
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.csv", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.ply", remeshPoints=remeshPointsList)
+#expand(grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt", remeshPoints=remeshPointsList)
+
+#various remesh point densities
+rule variousPat004Remesh:
+    threads: defaultThreads
+    input:
+        inPath = iowaExpTestRAFormCSOriMastPreDir + "pat004Pre_formCSOriMast.ply",
+        script = "tools/processes/remesh2.py",
+        deps = remeshDeps
+    params:
+        labs = True
+    output:
+        outPath = grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply"
+    shell:
+        """
+        python {input.script} {input.inPath} {output.outPath} {params.labs} {wildcards.remeshPoints}
+        """
+
+
+rule remeshLocalDescriptors:
+    threads: defaultThreads
+    input:
+        inFile = grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply",
+        function = "tools/cpp/localDescriptors/build/localDescriptors"
+    output:
+        outPly = grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.ply",
+        outCsv = grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.csv",
+        
+    shell:
+        """
+        {input.function} {input.inFile} {output.outPly} {output.outCsv}
+        """
+
+#/usr/bin/time {input.function} {input.inFile} {output.outPly} {output.outCsv} > {output.timeTxt} 2>&1
+#timeTxt = grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt"
