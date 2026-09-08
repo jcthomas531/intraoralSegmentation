@@ -46,3 +46,5 @@ rulegraph.png
 .cache/
 testDir/
 tools/cpp/localDescriptors/build/
+*.png
+*.dot
