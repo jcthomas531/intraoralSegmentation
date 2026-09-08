@@ -127,6 +127,7 @@ pR3.show()
 len(allTrans)
 range(len(allTrans))
 
+pre_dict = {}
 movedDict = {}
 patTeeth = list(allTrans.keys())
 for i in range(len(patTeeth)):
@@ -138,6 +139,8 @@ for i in range(len(patTeeth)):
     transTi = allTrans[ti]
     #perform transformation and export
     movedDict[ti] = applySpatialTrans(dat = datTi, trans=transTi)
+    #export restricted premesh as well
+    pre_dict[ti] = datTi
 
 surfDict = {
     tooth: giveSurf.giveSurf(face = dat["face"], vertex = dat["vert"]) 
@@ -176,4 +179,30 @@ for i in range(len(patTeeth)-1):
     pAll.add_mesh(list(surfDictC.values())[i], color = "blue",  opacity = .4)
 pAll.add_mesh(postSurf, color = "green",  opacity = .6)
 pAll.show()
+
+
+
+
+
+
+
+#distance each point moves with the rigid registration
+
+
+prePos3 = pre_dict["3"]["vert"][["x", "y", "z"]]
+movedPos3 = movedDict["3"]["vert"][["x", "y", "z"]]
+diffDf3 = pd.DataFrame({
+    "x": prePos3["x"] - movedPos3["x"],
+    "y": prePos3["y"] - movedPos3["y"],
+    "z": prePos3["z"] - movedPos3["z"]
+})
+diffDf3["l2Norm"] = np.linalg.norm(x = diffDf3[["x", "y", "z"]], axis = 1, ord = 2)
+meanX3 = diffDf3["x"].mean()
+sdX3 = diffDf3["x"].std()
+meanY3 = diffDf3["y"].mean()
+sdY3 = diffDf3["y"].std()
+meanZ3 = diffDf3["z"].mean()
+sdZ3 = diffDf3["z"].std()
+meanDiff3 = diffDf3["l2Norm"].mean()
+sdDiff3 = diffDf3["l2Norm"].std()
 

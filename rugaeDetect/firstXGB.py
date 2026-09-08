@@ -15,7 +15,18 @@ d1 = pd.read_csv(inDir + "preLabeledCsv/pat001Pre_localDescrLabel.csv")
 d1["pat"] = "001"
 d2 = pd.read_csv(inDir + "preLabeledCsv/pat004Pre_localDescrLabel.csv")
 d2["pat"] = "004"
-dAll = pd.concat([d1, d2])
+d4 = pd.read_csv(inDir + "preLabeledCsv/pat008Pre_localDescrLabel.csv")
+d4["pat"] = "008"
+d5 = pd.read_csv(inDir + "preLabeledCsv/pat012Pre_localDescrLabel.csv")
+d5["pat"] = "012"
+d6 = pd.read_csv(inDir + "preLabeledCsv/pat013Pre_localDescrLabel.csv")
+d6["pat"] = "013"
+d7 = pd.read_csv(inDir + "preLabeledCsv/pat014Pre_localDescrLabel.csv")
+d7["pat"] = "014"
+d8 = pd.read_csv(inDir + "preLabeledCsv/pat015Pre_localDescrLabel.csv")
+d8["pat"] = "015"
+
+dAll = pd.concat([d1, d2, d4, d5, d6, d7, d8])
 
 
 #following this guide
