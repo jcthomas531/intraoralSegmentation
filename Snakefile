@@ -1412,16 +1412,24 @@ rule localDescrLabeledCsv:
 #########################
 #remesh and feature extraction timing
 
-remeshPointsList = [8500]
-rule allRemesh:
+remeshPointsList = [8500, 10000, 20000, 25000, 30000, 35000, 40000, 45000, 50000]
+rule timeTest:
     input:
         expand(grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply", remeshPoints=remeshPointsList),
         expand(grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.csv", remeshPoints=remeshPointsList),
-        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.ply", remeshPoints=remeshPointsList)
-#expand(grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt", remeshPoints=remeshPointsList)
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.ply", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/labeledCsv/pat004Pre_remesh{remeshPoints}_labeld.csv", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/times/labelCsvRemesh{remeshPoints}Time.txt", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}.ply", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}_ld.ply", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}_ld.csv", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/pat007Pre_remesh{remeshPoints}_labeld.csv", remeshPoints=remeshPointsList),
+        expand(grantDir + "iowaExpTest/remeshDescriptorTesting/surfaceAreas/pat004Pre_remesh{remeshPoints}SurfArea.txt", remeshPoints=remeshPointsList)
+
 
 #various remesh point densities
-rule variousPat004Remesh:
+rule pat004Remesh_timeTest:
     threads: defaultThreads
     input:
         inPath = iowaExpTestRAFormCSOriMastPreDir + "pat004Pre_formCSOriMast.ply",
@@ -1436,8 +1444,19 @@ rule variousPat004Remesh:
         python {input.script} {input.inPath} {output.outPath} {params.labs} {wildcards.remeshPoints}
         """
 
+rule surfaceArea_timeTest:
+    threads: defaultThreads
+    input:
+        inPath = grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply",
+        script = "tools/processes/surfaceAreaTextfile.py"
+    output:
+        outPath = grantDir + "iowaExpTest/remeshDescriptorTesting/surfaceAreas/pat004Pre_remesh{remeshPoints}SurfArea.txt"
+    shell:
+        """
+        python {input.script} {input.inPath} {output.outPath}
+        """
 
-rule remeshLocalDescriptors:
+rule remeshLocalDescriptors_timeTest:
     threads: defaultThreads
     input:
         inFile = grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply",
@@ -1445,11 +1464,48 @@ rule remeshLocalDescriptors:
     output:
         outPly = grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.ply",
         outCsv = grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.csv",
-        
+        timeTxt = grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt"
     shell:
         """
-        {input.function} {input.inFile} {output.outPly} {output.outCsv}
+        {{ echo "REMESH TO {wildcards.remeshPoints} POINTS"; }} > {output.timeTxt}
+        {{ time {input.function} {input.inFile} {output.outPly} {output.outCsv}; }} 2>> {output.timeTxt}
         """
 
-#/usr/bin/time {input.function} {input.inFile} {output.outPly} {output.outCsv} > {output.timeTxt} 2>&1
-#timeTxt = grantDir + "iowaExpTest/remeshDescriptorTesting/times/ldExtractRemesh{remeshPoints}Time.txt"
+rule labeledCsv_timeTest:
+    threads: defaultThreads
+    input:
+        meshPath = grantDir + "iowaExpTest/remeshDescriptorTesting/remesh/pat004Pre_remesh{remeshPoints}.ply",
+        ldPath = grantDir + "iowaExpTest/remeshDescriptorTesting/localDescriptors/pat004Pre_remesh{remeshPoints}_ld.csv",
+        script = "rugaeDetect/processes/produceLabeledDescriptorCsv.py",
+        deps = rafDeps
+    output:
+        outPath = grantDir + "iowaExpTest/remeshDescriptorTesting/labeledCsv/pat004Pre_remesh{remeshPoints}_labeld.csv",
+        timeTxt = grantDir + "iowaExpTest/remeshDescriptorTesting/times/labelCsvRemesh{remeshPoints}Time.txt"
+    shell:
+        """
+        {{ echo "CREATE LABELED CSV FOR {wildcards.remeshPoints} POINTS"; }} > {output.timeTxt}
+        {{ time python {input.script} {input.meshPath} {input.ldPath} {output.outPath}; }} 2>> {output.timeTxt}
+        """
+
+rule createTestMeshes_timeTest:
+    threads: defaultThreads
+    input:
+        origScan = iowaExpTestRAFormCSOriMastPreDir + "pat007Pre_formCSOriMast.ply",
+        scriptRemesh = "tools/processes/remesh2.py",
+        deps = remeshDeps,
+        functionLd = "tools/cpp/localDescriptors/build/localDescriptors",
+        scriptLabels = "rugaeDetect/processes/produceLabeledDescriptorCsv.py",
+        depsLabels = rafDeps
+    params:
+        labs = True
+    output:
+        remeshPath = grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}.ply",
+        outPlyLd = grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}_ld.ply",
+        outCsvLd = grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/tempFiles/pat007Pre_remesh{remeshPoints}_ld.csv",
+        outLabeled = grantDir + "iowaExpTest/remeshDescriptorTesting/testMeshes/pat007Pre_remesh{remeshPoints}_labeld.csv"
+    shell:
+        """
+        python {input.scriptRemesh} {input.origScan} {output.remeshPath} {params.labs} {wildcards.remeshPoints}
+        {input.functionLd} {output.remeshPath} {output.outPlyLd} {output.outCsvLd}
+        python {input.scriptLabels} {output.remeshPath} {output.outCsvLd} {output.outLabeled}
+        """
